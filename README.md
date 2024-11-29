@@ -13,6 +13,9 @@
 ### 💻 Cómo Utilizar LabelTracker:
 
 1. **Instala las Dependencias:** Asegúrate de tener instaladas todas las dependencias necesarias. Puedes encontrar las instrucciones en el archivo `requirements.txt`.
+   ```sh
+   pip install -r requirements.txt
+   ```
 2. **Ejecuta el Programa:** Inicia LabelTracker mediante el siguiente comando:
    ```sh
    python LabelTracker.py
@@ -29,10 +32,9 @@
 ### 🛡️ Requisitos
 
 - **Python 3.6+**
-- **OpenCV** para captura y procesamiento de video.
-- **Tkinter** para la interfaz de usuario.
-- **Matplotlib** para el monitoreo de etiquetas en tiempo real.
-
+- **OpenCV** 
+- **Tkinter** 
+- **Matplotlib** 
 ### 📜 Licencia
 
 Este proyecto está bajo la licencia **GPL-3.0**. Puedes ver más detalles en el archivo `LICENSE`.
@@ -47,5 +49,4 @@ Haz un fork del repositorio y comienza a etiquetar de manera más rápida e inte
 
 —--
 
-¿Hay algo más que quieras agregar o ajustar para darle un enfoque más específico a LabelTracker?
 
