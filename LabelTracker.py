@@ -36,7 +36,7 @@ clean_frame = None
 prev_gray = None
 camera_index = 0
 unique_id_counter = 0
-HIST_SIMILARITY_THRESHOLD = 1
+HIST_SIMILARITY_THRESHOLD = 0.5  # Ajustado para una comparación más realista
 
 TRACKER_TYPE = "CSRT"
 
@@ -88,7 +88,7 @@ def is_histogram_similar(hist1, hist2, threshold=HIST_SIMILARITY_THRESHOLD):
     if hist1 is None or hist2 is None:
         return False
     similarity = cv2.compareHist(hist1, hist2, cv2.HISTCMP_BHATTACHARYYA)
-    return similarity < (1 - threshold)
+    return similarity < threshold  # Ajustado para que valores más bajos signifiquen mayor similitud
 
 def is_overlapping(bbox1, bbox2):
     x1, y1, w1, h1 = bbox1
@@ -153,12 +153,12 @@ def on_key_press(event):
 # Funciones de manejo del mouse
 def on_mouse_down(event):
     global current_bbox, tracking, selected_bbox, resize_mode
+    x, y = event.x, event.y
     if review_mode:
-        x, y = event.x, event.y
         selected_bbox = None
         resize_mode = None
 
-        # Verificar si el clic está cerca de alguna esquina de las cajas
+        # Verificar si el clic está cerca de alguna esquina de las cajas existentes
         for i, bbox in enumerate(bboxes):
             bx, by, bw, bh = bbox
             corners = {
@@ -183,20 +183,29 @@ def on_mouse_down(event):
                     selected_bbox = i
                     resize_mode = "move"
                     break
+
+            # Si no se selecciona ninguna caja existente, iniciar una nueva caja
+            if selected_bbox is None:
+                current_bbox = (x, y, 1, 1)
+                tracking = True
     else:
         # Modo normal para dibujar una nueva caja
-        current_bbox = (event.x, event.y, 1, 1)
+        current_bbox = (x, y, 1, 1)
         tracking = True
 
 def on_mouse_move(event):
     global current_bbox, tracking, selected_bbox, resize_mode, unique_id_counter
+    x, y = event.x, event.y
     if tracking and current_bbox and not review_mode:
         # Modo normal de creación de cajas
         current_bbox = (current_bbox[0], current_bbox[1],
                         event.x - current_bbox[0], event.y - current_bbox[1])
+    elif tracking and current_bbox and review_mode:
+        # Modo de creación de nuevas cajas en revisión
+        current_bbox = (current_bbox[0], current_bbox[1],
+                        event.x - current_bbox[0], event.y - current_bbox[1])
     elif review_mode and selected_bbox is not None:
         # Modo revisión: Redimensionar o mover la caja seleccionada
-        x, y = event.x, event.y
         bx, by, bw, bh = bboxes[selected_bbox]
 
         if resize_mode == "top_left":
@@ -231,21 +240,30 @@ def on_mouse_move(event):
 
 def on_mouse_up(event):
     global current_bbox, tracking, selected_bbox, resize_mode, unique_id_counter
-    if tracking and current_bbox and not review_mode:
-        # Terminar el dibujo de una nueva caja
-        if current_bbox[2] > 10 and current_bbox[3] > 10:
+    x_end, y_end = event.x, event.y
+
+    if tracking and current_bbox:
+        # Finalizar el dibujo de una nueva caja
+        x_start, y_start, _, _ = current_bbox
+        new_w = x_end - x_start
+        new_h = y_end - y_start
+        if abs(new_w) > 10 and abs(new_h) > 10:
             if not current_class:
                 messagebox.showerror("Error", "Por favor, establece una clase antes de marcar el objeto.")
             else:
+                # Normalizar las coordenadas en caso de que el usuario dibuje hacia arriba o hacia la izquierda
+                x, y, w, h = (min(x_start, x_end), min(y_start, y_end), abs(new_w), abs(new_h))
+
+                # Crear y agregar el tracker
                 tracker = create_tracker()
-                tracker.init(frame, tuple(map(int, current_bbox)))
+                tracker.init(frame, (x, y, w, h))
                 trackers.append(tracker)
-                bboxes.append(tuple(map(int, current_bbox)))
+                bboxes.append((x, y, w, h))
                 class_names.append(current_class)
                 instance_ids.append(unique_id_counter)
                 unique_id_counter += 1  # Incrementar el contador global
 
-                initial_hist = calculate_histogram(frame, current_bbox)
+                initial_hist = calculate_histogram(frame, (x, y, w, h))
                 initial_histograms.append(initial_hist)
 
                 kalman_filters.append(create_kalman_filter())
@@ -253,7 +271,6 @@ def on_mouse_up(event):
                 if current_class not in colors:
                     colors[current_class] = get_random_color()
 
-                x, y, w, h = map(int, current_bbox)
                 roi_gray = cv2.cvtColor(frame[y:y+h, x:x+w], cv2.COLOR_BGR2GRAY)
                 keypoints, descriptors = orb.detectAndCompute(roi_gray, None)
                 if keypoints is not None and descriptors is not None:
@@ -268,9 +285,11 @@ def on_mouse_up(event):
                 update_class_list()
         current_bbox = None
         tracking = False
+
     elif review_mode and selected_bbox is not None:
         # Terminar el ajuste de una caja existente
         save_current_labels()
+
     selected_bbox = None
     resize_mode = None
 
@@ -432,6 +451,9 @@ def update_class_list_for_image():
 def next_image(event=None):
     """Carga la siguiente imagen en la lista."""
     global current_image_index
+    if review_mode:
+        # Guardar etiquetas antes de cambiar de imagen
+        save_current_labels()
     if current_image_index < len(image_list) - 1:
         current_image_index += 1
         load_image_and_labels(current_image_index)
@@ -442,6 +464,9 @@ def next_image(event=None):
 def prev_image(event=None):
     """Carga la imagen anterior en la lista."""
     global current_image_index
+    if review_mode:
+        # Guardar etiquetas antes de cambiar de imagen
+        save_current_labels()
     if current_image_index > 0:
         current_image_index -= 1
         load_image_and_labels(current_image_index)
@@ -467,6 +492,15 @@ def toggle_review_mode():
             load_image_and_labels(current_image_index)
             draw_labels_on_frame()
             label_status.config(text="Modo Revisión Activado")
+            # Deshabilitar componentes que no son necesarios en revisión si aplica
+            # Por ejemplo, deshabilitar la selección de cámara
+            camera_selector.config(state='disabled')
+            # Limpiar trackers y listas relacionadas
+            trackers.clear()
+            kalman_filters.clear()
+            optical_flow_points.clear()
+            instance_ids.clear()
+            initial_histograms.clear()
         else:
             messagebox.showinfo("Información", "No hay imágenes etiquetadas para revisar.")
             review_mode = False
@@ -475,6 +509,31 @@ def toggle_review_mode():
         label_status.config(text=f"Clase actual: {current_class}")
         if previously_recording:
             toggle_recording()
+        # Rehabilitar componentes deshabilitados
+        camera_selector.config(state='normal')
+        # Re-inicializar trackers basados en las bboxes actuales
+        trackers.clear()
+        kalman_filters.clear()
+        optical_flow_points.clear()
+        instance_ids.clear()
+        initial_histograms.clear()
+        for bbox in bboxes:
+            tracker = create_tracker()
+            tracker.init(frame, bbox)
+            trackers.append(tracker)
+            kalman_filters.append(create_kalman_filter())
+            initial_hist = calculate_histogram(frame, bbox)
+            initial_histograms.append(initial_hist)
+            x, y, w, h = bbox
+            roi_gray = cv2.cvtColor(frame[y:y+h, x:x+w], cv2.COLOR_BGR2GRAY)
+            keypoints, descriptors = orb.detectAndCompute(roi_gray, None)
+            if keypoints is not None and descriptors is not None:
+                for kp in keypoints:
+                    kp.pt = (kp.pt[0] + x, kp.pt[1] + y)
+                optical_flow_points.append((keypoints, descriptors))
+            else:
+                optical_flow_points.append((None, None))
+        update_class_list()
 
 # Funciones para la lista de clases por imagen en modo revisión
 def rename_class_for_image():
@@ -671,9 +730,14 @@ def update_video():
                 new_class_names.append(class_name)
                 new_histograms.append(initial_histograms[i])
 
-        bboxes[:] = new_bboxes
-        class_names[:] = new_class_names
-        initial_histograms[:] = new_histograms
+        # Sincronizar las listas solo si todas tienen la misma longitud
+        if len(new_bboxes) == len(new_class_names) == len(new_histograms):
+            bboxes[:] = new_bboxes
+            class_names[:] = new_class_names
+            initial_histograms[:] = new_histograms
+        else:
+            print("Error: Las listas de bounding boxes, nombres de clase y histogramas no están sincronizadas.")
+
         frame_count += 1
         prev_gray = frame_gray.copy()
 
@@ -692,22 +756,6 @@ def close_program():
     root.quit()
     cap.release()
     cv2.destroyAllWindows()
-
-# Función para actualizar la gráfica
-def plot_labels():
-    label_counts = count_labels()
-    labels = list(label_counts.keys())
-    counts = list(label_counts.values())
-
-    ax.clear()
-    ax.bar(labels, counts, color='blue', alpha=0.7)
-    ax.set_xlabel("Etiquetas")
-    ax.set_ylabel("Conteo")
-    ax.set_title("Distribución de Etiquetas en Tiempo Real")
-    canvas.draw()
-
-    # Actualizar después de 1000 ms (1 segundo)
-    root.after(1000, plot_labels)
 
 # Iniciar la aplicación
 cap = cv2.VideoCapture(camera_index)
@@ -752,7 +800,7 @@ root.bind("<Key>", on_key_press)
 # Selector de cámara
 camera_var = StringVar(root)
 camera_var.set("0")
-camera_selector = OptionMenu(root, camera_var, "0", "1", command=change_camera)
+camera_selector = OptionMenu(root, camera_var, *map(str, range(10)), command=change_camera)
 camera_selector.config(font=("Arial", 12), bg=style_button_bg, fg=style_button_fg, activebackground=style_button_hover_bg)
 camera_selector.pack(side=tk.TOP, padx=10, pady=10)
 
@@ -821,7 +869,8 @@ sample_rate_slider.pack(pady=(0, 10), fill=tk.X)
 plot_labels()
 
 # Iniciar la actualización del video
-threading.Thread(target=update_video, daemon=True).start()
+# Utilizar after en lugar de threading para evitar conflictos con Tkinter
+root.after(20, update_video)
 
 root.mainloop()
 
