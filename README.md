@@ -1,78 +1,51 @@
-LabelTracker es una herramienta diseñada para agilizar y optimizar las tareas de etiquetado en formato YOLO (You Only Look Once), facilitando la preparación de datos para entrenamientos de modelos de aprendizaje profundo.
+### LabelTracker: Tu Herramienta para el Etiquetado Inteligente en YOLO
 
-🚀 Características
-Interfaz Intuitiva: Selecciona, edita y ajusta etiquetas fácilmente con solo unos clics.
-Navegación Rápida: Cambia entre imágenes etiquetadas usando las teclas A (anterior) y D (siguiente).
-Edición Flexible: Ajusta las cajas delimitadoras (ROIs) arrastrando las esquinas y edita las clases directamente.
-Modo de Revisión: Inspecciona y corrige etiquetas previamente creadas, garantizando la calidad de los datos.
-Integración YOLO: Guarda automáticamente las etiquetas en formato compatible con YOLO para entrenamiento de modelos.
-Personalización de Clases: Añade, elimina y edita clases para adaptarte a diferentes proyectos.
-🖥️ Requisitos del Sistema
-Python: 3.8 o superior
-Bibliotecas necesarias:
-OpenCV
-Tkinter
-Pillow
-Matplotlib
-(Consulta requirements.txt para más detalles.)
-⚙️ Instalación
-Clona este repositorio:
+**LabelTracker** es una herramienta poderosa y sencilla que facilita el etiquetado de objetos en videos y flujos de trabajo de etiquetado en formato YOLO (You Only Look Once). Este software está diseñado para optimizar la preparación de datos destinados a modelos de aprendizaje profundo, permitiendo una experiencia más eficiente y organizada.
 
-bash
-Copiar código
-git clone git@github.com:Mich2Dev/LabelTracker.git
-cd LabelTracker
-Crea un entorno virtual y activa:
+### 🛠️ Características Principales:
 
-bash
-Copiar código
-python3 -m venv env
-source env/bin/activate
-Instala las dependencias:
+- **Interfaz Gráfica Intuitiva:** Permite seleccionar regiones de interés (ROI) directamente sobre el video usando el cursor.
+- **Edición Flexible de Etiquetas:** Ajusta y modifica etiquetas en cualquier momento, ya sea durante la grabación o posteriormente en el modo de revisión.
+- **Seguimiento Inteligente:** Emplea algoritmos avanzados para seguir el movimiento de los objetos etiquetados a lo largo del video, minimizando el esfuerzo manual.
+- **Compatibilidad con YOLO:** Genera archivos de etiquetas directamente en formato YOLO, ideales para entrenar modelos de detección de objetos.
+- **Navegación Rápida:** Utiliza las teclas **A** y **D** para navegar entre las imágenes etiquetadas y poder editarlas o revisarlas fácilmente.
 
-bash
-Copiar código
-pip install -r requirements.txt
-Ejecuta la aplicación:
+### 💻 Cómo Utilizar LabelTracker:
 
-bash
-Copiar código
-python LabelTracker.py
-🛠️ Cómo Usarlo
-Iniciar Etiquetado:
+1. **Instala las Dependencias:** Asegúrate de tener instaladas todas las dependencias necesarias. Puedes encontrar las instrucciones en el archivo `requirements.txt`.
+2. **Ejecuta el Programa:** Inicia LabelTracker mediante el siguiente comando:
+   ```sh
+   python LabelTracker.py
+   ```
+3. **Comienza a Etiquetar:** Utiliza la interfaz para seleccionar objetos en el video y comenzar el etiquetado.
+4. **Revisión de Etiquetas:** Una vez completada la grabación, puedes revisar, modificar y ajustar las etiquetas según sea necesario.
 
-Abre la aplicación y selecciona tu clase de objeto.
-Dibuja las cajas delimitadoras en las regiones de interés (ROIs) usando el mouse.
-Haz clic en "Iniciar Grabación" para capturar imágenes etiquetadas.
-Modo Revisión:
+### 💡 Beneficios de Usar LabelTracker
 
-Haz clic en "Revisar Etiquetas" para inspeccionar las imágenes previamente etiquetadas.
-Usa las teclas A y D para navegar entre imágenes.
-Ajusta las cajas arrastrando las esquinas o moviéndolas.
-Edita las clases asociadas a cada imagen directamente desde la interfaz.
-Guardar Cambios:
+- **Ahorra Tiempo:** La herramienta está diseñada para hacer el proceso de etiquetado rápido y sencillo, especialmente con el seguimiento automático y la capacidad de editar etiquetas de forma intuitiva.
+- **Entrenamiento de Modelos Preciso:** Al generar etiquetas consistentes y precisas, tus modelos de detección de objetos obtendrán un entrenamiento de mayor calidad, lo cual mejora el desempeño del modelo.
+- **Flexible y Escalable:** Diseñado para soportar diferentes casos de uso, desde pequeños proyectos hasta grandes volúmenes de datos.
 
-Los cambios se guardan automáticamente al salir del modo de revisión.
-📂 Estructura del Proyecto
-plaintext
-Copiar código
-LabelTracker/
-│
-├── images/               # Carpeta para imágenes capturadas
-├── labels/               # Carpeta para archivos de etiquetas (formato YOLO)
-├── LabelTracker.py       # Archivo principal del programa
-├── requirements.txt      # Dependencias del proyecto
-├── LICENSE               # Licencia del proyecto
-└── README.md             # Documentación del proyecto
-🎯 Casos de Uso
-Preparación de datasets para entrenar modelos YOLO en tareas de detección de objetos.
-Corrección de etiquetas y ajustes finos en imágenes ya etiquetadas.
-Proyectos de visión por computadora en áreas como vigilancia, agricultura, manufactura, entre otros.
-🤝 Contribuciones
-¡Las contribuciones son bienvenidas! Si tienes sugerencias, encuentra errores o deseas agregar nuevas características, no dudes en enviar un pull request o abrir un issue.
+### 🛡️ Requisitos
 
-📝 Licencia
-Este proyecto está licenciado bajo la GPL-3.0 License. Consulta el archivo LICENSE para más detalles.
+- **Python 3.6+**
+- **OpenCV** para captura y procesamiento de video.
+- **Tkinter** para la interfaz de usuario.
+- **Matplotlib** para el monitoreo de etiquetas en tiempo real.
 
-📧 Contacto
-Autor: Mich2Dev
+### 📜 Licencia
+
+Este proyecto está bajo la licencia **GPL-3.0**. Puedes ver más detalles en el archivo `LICENSE`.
+
+### 🌐 Contribuciones
+
+📈 Las contribuciones son siempre bienvenidas. Si deseas agregar nuevas funcionalidades, optimizar el código o corregir errores, no dudes en hacer un fork del repositorio y crear un Pull Request.
+
+### 🚀 ¡Empezar!
+
+Haz un fork del repositorio y comienza a etiquetar de manera más rápida e inteligente con **LabelTracker**. Juntos podemos crear datasets de alta calidad para un futuro de aprendizaje profundo más poderoso.
+
+—--
+
+¿Hay algo más que quieras agregar o ajustar para darle un enfoque más específico a LabelTracker?
+
