@@ -47,6 +47,5 @@ Este proyecto está bajo la licencia **GPL-3.0**. Puedes ver más detalles en el
 
 Haz un fork del repositorio y comienza a etiquetar de manera más rápida e inteligente con **LabelTracker**. Juntos podemos crear datasets de alta calidad para un futuro de aprendizaje profundo más poderoso.
 
-—--
 
 
